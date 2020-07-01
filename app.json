@@ -1,0 +1,5 @@
+{
+  "name": "Scythe time hours",
+  "description": "Minute counter and reset.",
+  "image": "heroku/java"
+}
