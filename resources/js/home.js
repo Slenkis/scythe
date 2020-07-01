@@ -1,6 +1,8 @@
 const protocol = location.protocol
+const port = location.port
 const host = window.location.hostname
-const url = protocol + "//" + host + ":8080/api/get"
+
+const url = protocol + "//" + host + ":" + port + "/api/get"
 
 fetch(url)
     .then(response => {
