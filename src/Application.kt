@@ -1,30 +1,32 @@
 package com.slenkis
 
 import com.fasterxml.jackson.databind.SerializationFeature
+import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CORS
+import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
-import io.ktor.html.respondHtml
+import io.ktor.freemarker.FreeMarker
+import io.ktor.freemarker.FreeMarkerContent
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.resource
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.jackson.jackson
+import io.ktor.request.path
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.*
-import kotlinx.html.head
-import kotlinx.html.link
-import kotlinx.html.script
-import kotlinx.html.title
-import java.io.File
-import java.math.BigDecimal
+import io.ktor.util.KtorExperimentalAPI
 
-data class Model(val minutes: Int, val hours: Double)
+data class Model(val minutes: Int)
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
+@KtorExperimentalAPI
 fun Application.module() {
     install(CORS) {
         method(HttpMethod.Get)
@@ -34,56 +36,70 @@ fun Application.module() {
         anyHost()
     }
 
+    install(FreeMarker) {
+        templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
+    }
+
     install(ContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
         }
     }
 
+    install(CallLogging) {
+        level = org.slf4j.event.Level.INFO
+        filter { call -> call.request.path().startsWith("/") }
+    }
 
     routing {
+        fun getProperty(name: String) = application.environment.config.property(name).getString()
+
+        val factory = QueryFactory(
+            getProperty("db.url"),
+            getProperty("db.driver"),
+            getProperty("db.username"),
+            getProperty("db.password")
+        )
+
         get("/") {
-            call.respondHtml {
-                head {
-                    title("Home")
-                    script(src = "/static/home.js") {}
-                    link("/static/home.css", rel = "stylesheet")
-                }
-            }
+            val model = Model(factory.getMinutes())
+            call.respond(FreeMarkerContent("home.ftl", mapOf("model" to model)))
         }
 
-        route("/api") {
-            val file = File("resources/minutes")
-            fun readFile(file: File) = file.readText().toInt()
-            fun Double.roundTo1DecimalPlace() =
-                BigDecimal(this).setScale(1, BigDecimal.ROUND_HALF_UP).toDouble()
-
-            get("get") {
-                val minutes = readFile(file)
-                val hours = (minutes / 60.0).roundTo1DecimalPlace()
-                call.respond(Model(minutes, hours))
+        route("/time") {
+            get {
+                val minutes = factory.getMinutes()
+                call.respond(Model(minutes))
             }
 
-            put("add/{value}") {
-                val addValue = call.parameters["value"]?.toByteOrNull() ?: 0
-                if (addValue < 1) call.respond(HttpStatusCode.NotAcceptable)
-                else {
-                    val oldValue = readFile(file)
-                    val newValue = oldValue + addValue
-                    file.writeText("$newValue")
-                    call.respond(HttpStatusCode.Accepted)
+            // add
+            put {
+                try {
+                    val request = call.receive<Model>()
+                    if (request.minutes < 1) call.respond(HttpStatusCode.NotAcceptable)
+                    else {
+                        factory.addMinutes(request.minutes)
+                        call.respond(HttpStatusCode.OK)
+                    }
+                } catch (e: Exception) {
+                    call.respond(HttpStatusCode.UnsupportedMediaType)
                 }
+
             }
 
-            delete("reset") {
-                file.writeText("0")
+            // reset
+            post {
+                factory.resetMinutes()
                 call.respond(HttpStatusCode.OK)
             }
         }
 
-        static("static") {
-            resources("js")
-            resources("css")
+        static {
+            resource("favicon.ico")
+            static("static") {
+                resources("js")
+                resources("css")
+            }
         }
     }
 }

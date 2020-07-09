@@ -16,7 +16,7 @@ apply plugin: 'kotlin'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-group 'com.slenkis'
+group 'com.github.slenkis'
 version '0.1'
 mainClassName = "io.ktor.server.netty.EngineMain"
 
@@ -41,8 +41,13 @@ dependencies {
     implementation "io.ktor:ktor-html-builder:$ktor_version"
     implementation "io.ktor:ktor-jackson:$ktor_version"
     testImplementation "io.ktor:ktor-server-tests:$ktor_version"
+    implementation "io.ktor:ktor-freemarker:$ktor_version"
 
-    implementation "com.natpryce:konfig:1.6.10.0"
+    implementation "org.jetbrains.exposed:exposed-core:0.24.1"
+    implementation "org.jetbrains.exposed:exposed-dao:0.24.1"
+    implementation "org.jetbrains.exposed:exposed-jdbc:0.24.1"
+    implementation "org.jetbrains.exposed:exposed-java-time:0.24.1"
+    implementation "mysql:mysql-connector-java:8.0.20"
 }
 
 shadowJar {
