@@ -1,27 +1,42 @@
-### What is it?
-Minute counter (increment and reset)
+# Scythe
+Ktor service for adding and resetting minutes. 
 
-### How to run:
-#### Change [config](resources/application.conf) to your before run!
+## Installation and build
+```
+git clone https://github.com/Slenkis/scythe.git
+cd scythe/
+chmod +x gradlew
+./gradlew shadowJar
+```
 
-**Gradle:**  
-`./gradlew run`
+## Usage
+### Run service
+`java -jar build/libs/scythe.jar`
 
-**ShadowJar:**  
-`java -jar ./build/libs/scythe.jar`
+url: `localhost:8080`  
+username: `admin`  
+password: `12345`
 
-### Project Info:
-* Written on Kotlin, FreeMarker, JS (for HTML)
-* Work on default 8080 port (change in [config](resources/application.conf))
-* SQL Database **required** for counter (change DB settings in [config](resources/application.conf))
-* Auto Reload (watch)
-* Ready for Heroku deploy ([Procfile](./Procfile) and [ShadowJar](./build/libs))
+### Run service with a custom config
+`java -jar build/libs/scythe.jar -config="/path/to/cofig"`
 
-### Endpoints:
+## References
+* [Jackson](https://ktor.io/servers/features/content-negotiation/jackson.html)
+* [FreeMarker](https://ktor.io/servers/features/templates/freemarker.html)
+* [Basic authentication](https://ktor.io/servers/features/authentication/basic.html)
+* [Auto Reload](https://ktor.io/servers/autoreload.html)
+* [Heroku deploy](https://ktor.io/servers/deploy/hosting/heroku.html) ([Procfile](./Procfile))
+* [Fat JAR](https://ktor.io/servers/deploy/packing/fatjar.html) ([ShadowJar](./build/libs))
+
+## Endpoints
 `/` - GET: return HTML page for control minutes  
-`/temp` - GET: return JSON with total minutes: `{ minutes: 32 }`  
-`/temp` - PUT: with JSON body: `{ minutes: 45 }` **adds** 45 minutes to counter; return 200 or 406 or 415 code  
-`/temp` - POST: **reset** counter to 0 minutes; return 200 code
+`/temp` - GET: return JSON with total minutes. Example: `{ minutes: 32 }`  
+`/temp` - PUT: adds minutes from JSON body to counter; return `200` or `406` or `415` code  
+`/temp` - POST: **reset** counter to 0 minutes; return `200` code
 
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.  
+Please make sure to update tests as appropriate.
 
-#### If you know how to add authorization for this project, please send the `Pull Request`
+## License
+[MIT](LICENSE)
