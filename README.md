@@ -25,14 +25,17 @@ password: `12345`
 * [FreeMarker](https://ktor.io/servers/features/templates/freemarker.html)
 * [Basic authentication](https://ktor.io/servers/features/authentication/basic.html)
 * [Auto Reload](https://ktor.io/servers/autoreload.html)
-* [Heroku deploy](https://ktor.io/servers/deploy/hosting/heroku.html) ([Procfile](./Procfile))
+* [Heroku deploy](https://ktor.io/servers/deploy/hosting/heroku.html) ([Procfile](./Procfile), [Working example](https://scythe0.herokuapp.com))
 * [Fat JAR](https://ktor.io/servers/deploy/packing/fatjar.html) ([ShadowJar](./build/libs))
 
 ## Endpoints
 `/` - GET: return HTML page for control minutes  
-`/temp` - GET: return JSON with total minutes. Example: `{ minutes: 32 }`  
+
+`/temp` - GET: return JSON with total minutes
+ 
 `/temp` - PUT: adds minutes from JSON body to counter; return `200` or `406` or `415` code  
-`/temp` - POST: **reset** counter to 0 minutes; return `200` code
+
+`/temp` - POST: reset counter to 0 minutes; return `200` code
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.  
